@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Browser Simulator</title>
+    <style>
+        body { margin: 0; font-family: Arial, sans-serif; }
+        #searchButton {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: transparent;
+            border: none;
+            cursor: pointer;
+        }
+        #searchButton img {
+            width: 32px;
+            height: 32px;
+        }
+        #searchBar {
+            position: fixed;
+            top: -60px;
+            right: 0;
+            width: 300px;
+            background: #fff;
+            padding: 15px;
+            box-sizing: border-box;
+            border-radius: 8px 8px 0 0;
+            transition: top 0.3s ease;
+            visibility: hidden;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        #searchBar input {
+            width: 85%;
+            padding: 10px;
+            margin-right: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        #searchBar button {
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        #searchBar button:hover {
+            background-color: #45a049;
+        }
+        #closeButton {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 16px;
+            background: transparent;
+            border: none;
+            color: #888;
+            cursor: pointer;
+        }
+        #closeButton:hover {
+            color: #555;
+        }
+        iframe {
+            width: 100vw;
+            height: 100vh;
+            border: none;
+        }
+        .hover-link {
+            color: #007BFF;
+            text-decoration: underline;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <button id="searchButton">
+        <img src="https://cdn-icons-png.flaticon.com/512/4475/4475396.png" alt="Search Icon">
+    </button>
+    
+    <div id="searchBar">
+        <button id="closeButton" onclick="hideSearchBar()">×</button>
+        <input type="text" id="searchInput" placeholder="Enter URL..." onkeydown="if(event.key === 'Enter') loadUrl()">
+        <label for="loadMethod">Use CORS Anywhere</label>
+        <input type="checkbox" id="loadMethod">
+        <button onclick="loadUrl()">Go</button>
+    </div>
+    
+    <iframe id="browserFrame"></iframe>
+    
+    <div id="hoveredUrl" style="position: absolute; bottom: 10px; left: 10px; background: rgba(0, 0, 0, 0.7); color: white; padding: 10px; border-radius: 5px; display: none;">
+        <span>Hovered URL: <a id="hoveredLink" class="hover-link" target="_blank">None</a></span>
+    </div>
+
+    <script>
+        // Function to load the page with or without CORS proxy
+        function loadPage(url, useCORS) {
+            if (!url.startsWith('http')) {
+                url = 'http://' + url; // Make sure it's a valid URL
+            }
+
+            if (useCORS) {
+                const proxyUrl = 'https://cors-anywhere.herokuapp.com/' + url;
+                fetch(proxyUrl, {
+                    headers: {
+                        'x-requested-with': 'fetch'
+                    }
+                })
+                .then(response => response.text())
+                .then(text => {
+                    const blob = new Blob([text], { type: 'text/html' });
+                    const iframeUrl = URL.createObjectURL(blob);
+                    document.getElementById('browserFrame').src = iframeUrl;
+                })
+                .catch(error => console.error('Failed to load page with CORS:', error));
+            } else {
+                document.getElementById('browserFrame').src = url; // Direct loading
+            }
+        }
+
+        // Load URL when 'Go' button or Enter key is pressed
+        function loadUrl() {
+            const url = document.getElementById('searchInput').value;
+            const useCORS = document.getElementById('loadMethod').checked;
+            if (url) {
+                loadPage(url, useCORS);
+                hideSearchBar(); // Hide search bar after URL is loaded
+            }
+        }
+
+        // Hide the search bar
+        function hideSearchBar() {
+            const searchBar = document.getElementById('searchBar');
+            searchBar.style.top = '-60px';
+            searchBar.style.visibility = 'hidden';
+        }
+
+        // Show the search bar
+        function showSearchBar() {
+            const searchBar = document.getElementById('searchBar');
+            searchBar.style.top = '0';
+            searchBar.style.visibility = 'visible';
+            document.getElementById('searchInput').focus(); // Focus the input field
+            document.getElementById('searchInput').value = document.getElementById('browserFrame').src; // Set current URL in search input
+        }
+
+        // Toggle search bar visibility when search button is clicked
+        document.getElementById('searchButton').addEventListener('click', function() {
+            const searchBar = document.getElementById('searchBar');
+            if (searchBar.style.visibility === 'visible') {
+                hideSearchBar(); // Hide if already visible
+            } else {
+                showSearchBar(); // Show if currently hidden
+            }
+        });
+
+        // Detect hover over links and update the hovered URL
+        document.body.addEventListener('mouseover', function(event) {
+            if (event.target.tagName === 'A' && event.target.href) {
+                const hoveredUrl = event.target.href;
+                document.getElementById('hoveredUrl').style.display = 'block';
+                document.getElementById('hoveredLink').href = hoveredUrl;
+                document.getElementById('hoveredLink').textContent = hoveredUrl;
+                
+                // Add click event to load the hovered URL inside the iframe
+                event.target.addEventListener('click', function(e) {
+                    e.preventDefault(); // Prevent the default behavior
+                    loadPage(hoveredUrl, document.getElementById('loadMethod').checked); // Load it inside the iframe
+                });
+            }
+        });
+
+        // Default page load (optional)
+        loadPage('https://www.google.com', false);
+    </script>
+</body>
+</html>
