@@ -1,260 +1,42 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Browser Simulator</title>
-    <link id="favicon" rel="icon" href="" type="image/x-icon">
-    <style>
-        body { margin: 0; font-family: Arial, sans-serif; }
-        #searchButton {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background-color: transparent;
-            border: none;
-            cursor: pointer;
-        }
-        #searchButton img {
-            width: 32px;
-            height: 32px;
-        }
-        #searchBar {
-            position: fixed;
-            top: -100px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 800px;
-            background: white;
-            padding: 20px;
-            box-sizing: border-box;
-            border-radius: 8px;
-            transition: top 0.3s ease;
-            visibility: hidden;
-            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        #searchBar input {
-            width: 95%;
-            padding: 12px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            font-size: 18px;
-            margin-bottom: 10px;
-        }
-        #searchBar button {
-            padding: 12px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 18px;
-        }
-        #tabs {
-            position: fixed;
-            bottom: 10px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: auto;
-            background: #ddd;
-            display: none;
-            padding: 5px;
-            border-radius: 8px;
-        }
-        .tab {
-            display: inline-flex;
-            align-items: center;
-            padding: 10px 15px;
-            background: white;
-            border-radius: 5px;
-            margin-right: 5px;
-            cursor: pointer;
-        }
-        .tab.active {
-            background: #bbb;
-        }
-        .tab button {
-            margin-left: 10px;
-            background: red;
-            color: white;
-            border: none;
-            cursor: pointer;
-            border-radius: 50%;
-            width: 20px;
-            height: 20px;
-        }
-        iframe {
-            width: 100vw;
-            height: 100vh;
-            border: none;
-        }
-        .nav-button {
-            padding: 8px 12px;
-            margin: 5px;
-            background-color: #f0f0f0;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>New Tab</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    html, body {
+      height: 100%;
+      overflow: hidden;
+    }
+    iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+  </style>
 </head>
 <body>
-    <button id="searchButton">
-        <img src="https://cdn-icons-png.flaticon.com/512/4475/4475396.png" alt="Search Icon">
-    </button>
-    
-    <div id="searchBar">
-        <input type="text" id="searchInput" placeholder="Enter URL...">
-        <button onclick="createTab(document.getElementById('searchInput').value)">Open</button>
-        <div>
-            <button class="nav-button" onclick="navigate('back')">Back</button>
-            <button class="nav-button" onclick="navigate('forward')">Forward</button>
-            <button class="nav-button" onclick="reloadTab()">Reload</button>
-        </div>
-    </div>
-    
-    <div id="tabs"></div>
-    <iframe id="browserFrame"></iframe>
-    
-    <script>
-        let tabs = JSON.parse(localStorage.getItem('tabs')) || [];
-        let activeTab = localStorage.getItem('activeTab') || null;
-        
-        // Keep the tab's data in memory
-        let tabData = JSON.parse(localStorage.getItem('tabData')) || {};
+  <iframe id="iframe"></iframe>
 
-        function createTab(url = 'https://www.google.com') {
-            // Ensure URL has https:// prefix if not present
-            if (!url.startsWith('http://') && !url.startsWith('https://')) {
-                url = 'https://' + url;
-            }
-            const id = Date.now().toString();
-            tabs.push({ id, url });
-            tabData[id] = { url, history: [url], historyIndex: 0 }; // store history for the new tab
-            setActiveTab(id);
-            saveTabs();
-            updateTabsUI();
-        }
+  <script>
+    // List of URLs
+    const urls = [
+      "https://pluh.root.sx/",
+      "https://somuchpeakk.hotunix.com/",
+      "https://huawaakiskokoa.duckdns.org/"
+    ];
 
-        function setActiveTab(id) {
-            activeTab = id;
-            localStorage.setItem('activeTab', id);
-            const tabDataObj = tabData[id];
-            if (tabDataObj) {
-                loadUrl(tabDataObj.url);
-            }
-            updateTabsUI();
-        }
+    // Pick a random URL
+    const randomUrl = urls[Math.floor(Math.random() * urls.length)];
 
-        function loadUrl(url) {
-            const iframe = document.getElementById('browserFrame');
-            iframe.src = url;
-
-            // Update the address bar URL and favicon
-            history.pushState(null, null, url);  // Update the browser's address bar
-            document.title = url;
-            const favicon = document.querySelector('link[rel="icon"]') ? document.querySelector('link[rel="icon"]').href : '';
-            document.getElementById('favicon').href = favicon || 'favicon.ico';  // Default favicon
-
-            // Add event listener for redirect and change the title and favicon dynamically
-            iframe.onload = () => {
-                const doc = iframe.contentDocument;
-                const title = doc.title || 'Browser Simulator';
-                const favicon = doc.querySelector('link[rel="icon"]') ? doc.querySelector('link[rel="icon"]').href : '';
-                
-                document.title = title;
-                document.getElementById('favicon').href = favicon || 'favicon.ico';  // Default favicon
-            };
-
-            // Intercept links to prevent opening in a new tab
-            iframe.contentWindow.document.addEventListener('click', function(e) {
-                const anchor = e.target.closest('a');
-                if (anchor && anchor.href) {
-                    e.preventDefault();  // Prevent the link from opening externally
-                    loadUrl(anchor.href); // Load the link in the same iframe
-                }
-            });
-        }
-
-        function closeTab(id) {
-            tabs = tabs.filter(tab => tab.id !== id);
-            delete tabData[id]; // remove the tab's data
-            if (activeTab === id) {
-                activeTab = tabs.length ? tabs[0].id : null;
-            }
-            saveTabs();
-            updateTabsUI();
-            if (activeTab) setActiveTab(activeTab);
-        }
-
-        function updateTabsUI() {
-            const tabContainer = document.getElementById('tabs');
-            tabContainer.innerHTML = '';
-            tabs.forEach(tab => {
-                const tabElement = document.createElement('div');
-                tabElement.classList.add('tab');
-                if (tab.id === activeTab) tabElement.classList.add('active');
-                tabElement.textContent = tab.url;
-                tabElement.onclick = () => setActiveTab(tab.id);
-                
-                const closeButton = document.createElement('button');
-                closeButton.textContent = 'x';
-                closeButton.onclick = (e) => {
-                    e.stopPropagation();
-                    closeTab(tab.id);
-                };
-                
-                tabElement.appendChild(closeButton);
-                tabContainer.appendChild(tabElement);
-            });
-            tabContainer.style.display = tabs.length && document.getElementById('searchBar').style.visibility === 'visible' ? 'flex' : 'none';
-        }
-
-        function saveTabs() {
-            localStorage.setItem('tabs', JSON.stringify(tabs));
-            localStorage.setItem('tabData', JSON.stringify(tabData));
-        }
-
-        function navigate(direction) {
-            const tabDataObj = tabData[activeTab];
-            const history = tabDataObj.history;
-            let newIndex = tabDataObj.historyIndex;
-
-            if (direction === 'back' && newIndex > 0) {
-                newIndex--;
-            } else if (direction === 'forward' && newIndex < history.length - 1) {
-                newIndex++;
-            }
-
-            tabDataObj.historyIndex = newIndex;
-            loadUrl(history[newIndex]);
-        }
-
-        function reloadTab() {
-            const tabDataObj = tabData[activeTab];
-            loadUrl(tabDataObj.history[tabDataObj.historyIndex]);
-        }
-
-        document.getElementById('searchButton').addEventListener('click', function() {
-            const searchBar = document.getElementById('searchBar');
-            const tabContainer = document.getElementById('tabs');
-            const isVisible = searchBar.style.visibility === 'visible';
-            searchBar.style.top = isVisible ? '-100px' : '50px';
-            searchBar.style.visibility = isVisible ? 'hidden' : 'visible';
-            tabContainer.style.display = isVisible ? 'none' : 'flex';
-        });
-
-        window.addEventListener('load', () => {
-            if (tabs.length === 0) {
-                createTab();
-            } else {
-                updateTabsUI();
-                setActiveTab(activeTab);
-            }
-        });
-    </script>
+    // Load the chosen URL in the iframe
+    document.getElementById("iframe").src = randomUrl;
+  </script>
 </body>
 </html>
