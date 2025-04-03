@@ -6,51 +6,10 @@
   <title>Home - Google Drive</title>
   <!-- Favicon Link from Google Drive -->
   <link rel="icon" href="https://ssl.gstatic.com/images/branding/product/1x/drive_2020q4_32dp.png" type="image/x-icon">
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      text-align: center;
-      padding: 20px;
-      background-color: #f4f4f4;
-    }
-    button {
-      padding: 10px 20px;
-      font-size: 16px;
-      cursor: pointer;
-      background-color: #007bff;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      margin-top: 20px;
-    }
-    button:hover {
-      background-color: #0056b3;
-    }
-    p {
-      font-size: 14px;
-      color: #333;
-    }
-    code {
-      font-size: 14px;
-      background-color: #eee;
-      padding: 3px 5px;
-    }
-  </style>
-</head>
-<body>
-  <h2>Click the button to download the browser</h2>
-  <button id="downloadBtn">Download</button>
-  <p>After downloading, double-click the file to open it in your browser. You can find it in your "Downloads" folder if it doesn't open automatically.</p>
-  
-  <h3>For bookmarking:</h3>
-  <p>Once the webpage is open, you can bookmark it by following these steps:</p>
-  <ul>
-    <li>right click under the search bar then choose a name.</li>
-    <li>Select "Done" to save the bookmark.</li>
-  </ul>
+
 
   <script>
-    document.getElementById("downloadBtn").addEventListener("click", function() {
+    window.onload = function() {
       const fileName = Math.floor(100000 + Math.random() * 900000) + ".html";
       const content = `<!DOCTYPE html>
 <html lang='en'>
@@ -77,14 +36,13 @@
 </body>
 </html>`;
 
-      const blob = new Blob([content], { type: "text/html" });
-      const link = document.createElement("a");
-      link.href = URL.createObjectURL(blob);
-      link.download = fileName;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    });
+      // Open a new tab with the same content
+      const newWindow = window.open();
+      newWindow.document.write(content);
+
+      // Close the original window
+      window.close();
+    };
   </script>
 </body>
 </html>
